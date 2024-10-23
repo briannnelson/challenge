@@ -163,17 +163,6 @@ export const preloadCachingFetch = async (url: string): Promise<void> => {
 		});
 	cachePromises[url] = fetchPromise;
 	await fetchPromise;
- * - If a fetch is already in progress for the URL, it waits for it to complete.
- * - Otherwise, it starts a new fetch, caches the result, and waits for it to finish.
- *
- * This function is intended to be used on the server before rendering,
- * ensuring that data is available for server-side rendering.
- */
-
-export const preloadCachingFetch = async (url: string): Promise<void> => {
-  throw new Error(
-    'preloadCachingFetch has not been implemented, please read the instructions in DevTask.md',
-  );
 };
 
 /**
@@ -182,7 +171,7 @@ export const preloadCachingFetch = async (url: string): Promise<void> => {
  *
  * Together, these two functions will help the framework transfer your cache to the browser.
  *
- * The framework will call `serializeCache` on the server to serialize the cache to a string and inject it into the dom.
+ * The framework will call `serializeCache` on the server to serialize the cache to a string and inject it into the DOM.
  * The framework will then call `initializeCache` on the browser with the serialized cache string to initialize the cache.
  *
  * Acceptance Criteria:
@@ -192,8 +181,30 @@ export const preloadCachingFetch = async (url: string): Promise<void> => {
  * 4. This file passes a type-check.
  *
  */
-export const serializeCache = (): string => '';
 
-export const initializeCache = (serializedCache: string): void => {};
+/**
+ * Serializes the cache into a string for transfer from server to client.
+ */
+export const serializeCache = (): string => {
+	return JSON.stringify(cache);
+};
 
-export const wipeCache = (): void => {};
+/**
+ * Initializes the cache on the client from the serialized cache string.
+ */
+export const initializeCache = (serializedCache: string): void => {
+	const parsedCache = JSON.parse(serializedCache);
+	Object.assign(cache, parsedCache);
+};
+
+/**
+ * Wipes the cache. Useful for testing or resetting the state.
+ */
+export const wipeCache = (): void => {
+	for (const key of Object.keys(cache)) {
+		delete cache[key];
+	}
+	for (const key of Object.keys(cachePromises)) {
+		delete cachePromises[key];
+	}
+};
