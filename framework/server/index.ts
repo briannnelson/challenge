@@ -1,7 +1,7 @@
 import Fastify from 'fastify';
 import buildHtmlDoc from './buildHtmlDoc';
 import renderApp from './renderApp';
-import * as fs from 'fs';
+import * as fs from 'node:fs';
 import { startMswServer } from '../mock-server/server';
 import { wipeCache } from '../../caching-fetch-library/cachingFetch';
 
