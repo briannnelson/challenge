@@ -21,6 +21,7 @@
 		"rimraf": "^6.0.1"
 	},
 	"dependencies": {
+		"dotenv": "^16.4.5",
 		"fastify": "^4.27.0",
 		"msw": "^2.3.0",
 		"react": "^18.3.1",
@@ -28,6 +29,8 @@
 		"valibot": "^0.30.0"
 	},
 	"msw": {
-		"workerDirectory": ["mockServer"]
+		"workerDirectory": [
+			"mockServer"
+		]
 	}
 }
