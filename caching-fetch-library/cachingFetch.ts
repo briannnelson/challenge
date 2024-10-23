@@ -1,12 +1,19 @@
+import { useState, useEffect } from "react";
+
+// Cache to store fetched data
+const cache: Record<string, unknown> = {};
+// Cache to store ongoing fetch promises
+const cachePromises: Record<string, Promise<unknown>> = {};
+
 // You may edit this file, add new files to support this file,
 // and/or add new dependencies to the project as you see fit.
 // However, you must not change the surface API presented from this file,
 // and you should not need to change any other files in the project to complete the challenge
 
 type UseCachingFetch = (url: string) => {
-  isLoading: boolean;
-  data: unknown;
-  error: Error | null;
+	isLoading: boolean;
+	data: unknown;
+	error: Error | null;
 };
 
 /**
@@ -27,14 +34,81 @@ type UseCachingFetch = (url: string) => {
  * 4. This file passes a type-check.
  *
  */
+
+/**
+ * Custom hook that fetches data from a URL with caching.
+ * - If the data for the URL is already cached, it returns it immediately.
+ * - If a fetch is in progress for the URL, it waits for it to complete.
+ * - Otherwise, it initiates a new fetch, caches the result, and updates the state.
+ *
+ * Returns an object containing:
+ * - isLoading: indicates if the fetch is in progress.
+ * - data: the fetched data or null if not yet available.
+ * - error: any error encountered during the fetch.
+ */
+
 export const useCachingFetch: UseCachingFetch = (url) => {
-  return {
-    data: null,
-    isLoading: false,
-    error: new Error(
-      'UseCachingFetch has not been implemented, please read the instructions in DevTask.md',
-    ),
-  };
+	const [state, setState] = useState<{
+		isLoading: boolean;
+		data: unknown;
+		error: Error | null;
+	}>({
+		isLoading: true,
+		data: null,
+		error: null,
+	});
+
+	useEffect(() => {
+		let isMounted = true;
+
+		if (cache[url]) {
+			// Data is already cached
+			setState({ isLoading: false, data: cache[url], error: null });
+		} else if (cachePromises[url] !== undefined) {
+			// Fetch is in progress
+			cachePromises[url]
+				.then((data) => {
+					if (isMounted) {
+						setState({ isLoading: false, data, error: null });
+					}
+				})
+				.catch((error) => {
+					if (isMounted) {
+						setState({ isLoading: false, data: null, error });
+					}
+				});
+		} else {
+			// Initiate fetch and store the promise
+			const fetchPromise = fetch(url)
+				.then((response) => {
+					if (!response.ok) throw new Error(`Failed to fetch ${url}`);
+					return response.json();
+				})
+				.then((data) => {
+					cache[url] = data;
+					delete cachePromises[url];
+					if (isMounted) {
+						setState({ isLoading: false, data, error: null });
+					}
+					return data;
+				})
+				.catch((error) => {
+					delete cachePromises[url];
+					if (isMounted) {
+						setState({ isLoading: false, data: null, error });
+					}
+					throw error;
+				});
+
+			cachePromises[url] = fetchPromise;
+		}
+
+		return () => {
+			isMounted = false;
+		};
+	}, [url]);
+
+	return state;
 };
 
 /**
