@@ -5,7 +5,7 @@
 	"main": "index.js",
 	"scripts": {
 		"build": "npm run build:server && npm run build:client",
-		"build:server": "rimraf dist && mkdirp dist && cpy ./framework/mock-server/mockServiceWorker.js dist/ && esbuild ./framework/server/index.js --bundle --minify --platform=node --outfile=dist/server.js",
+		"build:server": "rimraf dist && mkdirp dist && cpy \"framework/mock-server/mockServiceWorker.js\" dist --flat && esbuild ./framework/server/index.js --bundle --minify --platform=node --outfile=dist/server.js",
 		"build:client": "esbuild ./framework/client/index.js --bundle --minify --platform=browser --outfile=dist/client.js",
 		"start": "npm run build && node dist/server.js"
 	},
