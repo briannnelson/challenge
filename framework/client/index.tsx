@@ -16,7 +16,7 @@ const startClient = async () => {
   // If there is initial data, use it to initialize the cache, then clean up
   if (typeof window.__INITIAL_DATA__ === 'string') {
     initializeCache(window.__INITIAL_DATA__);
-    delete window.__INITIAL_DATA__;
+    window.__INITIAL_DATA__ = undefined;
   }
 
   const domNode = document.getElementById('app');
