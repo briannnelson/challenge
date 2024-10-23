@@ -6,6 +6,7 @@ import {
 } from '../caching-fetch-library/cachingFetch';
 import Person from './Person';
 import { validateData } from './validation';
+import constants from "./utils/constants";
 
 type Application = FC & {
   preLoadServerData?: () => Promise<void>;
@@ -16,9 +17,7 @@ const App: Application = () => {
     data: rawData,
     isLoading,
     error,
-  } = useCachingFetch(
-    'https://randomapi.com/api/6de6abfedb24f889e0b5f675edc50deb?fmt=raw&sole&seed=123',
-  );
+  } = useCachingFetch(constants.apiUrl);
   if (isLoading) return <div>Loading...</div>;
   if (error || rawData === null) return <div>Error: {error?.message}</div>;
 
