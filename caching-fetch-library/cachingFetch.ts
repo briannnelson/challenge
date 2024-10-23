@@ -125,6 +125,51 @@ export const useCachingFetch: UseCachingFetch = (url) => {
  * 3. This file passes a type-check.
  *
  */
+
+/**
+ * Preloads data for a given URL into the cache.
+ * - If the data is already cached, it returns immediately.
+ * - If a fetch is already in progress for the URL, it waits for it to complete.
+ * - Otherwise, it starts a new fetch, caches the result, and waits for it to finish.
+ *
+ * This function is intended to be used on the server before rendering,
+ * ensuring that data is available for server-side rendering.
+ */
+
+export const preloadCachingFetch = async (url: string): Promise<void> => {
+	if (cache[url]) {
+		// Data is already cached
+		return;
+	}
+	if (await cachePromises[url]) {
+		// Fetch is already in progress
+		await cachePromises[url];
+		return;
+	}
+	// Fetch data and store it in the cache
+	const fetchPromise = fetch(url)
+		.then((response) => {
+			if (!response.ok) throw new Error(`Failed to fetch ${url}`);
+			return response.json();
+		})
+		.then((data) => {
+			cache[url] = data;
+			delete cachePromises[url];
+			return data;
+		})
+		.catch((error) => {
+			delete cachePromises[url];
+			throw error;
+		});
+	cachePromises[url] = fetchPromise;
+	await fetchPromise;
+ * - If a fetch is already in progress for the URL, it waits for it to complete.
+ * - Otherwise, it starts a new fetch, caches the result, and waits for it to finish.
+ *
+ * This function is intended to be used on the server before rendering,
+ * ensuring that data is available for server-side rendering.
+ */
+
 export const preloadCachingFetch = async (url: string): Promise<void> => {
   throw new Error(
     'preloadCachingFetch has not been implemented, please read the instructions in DevTask.md',
